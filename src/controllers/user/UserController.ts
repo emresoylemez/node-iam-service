@@ -16,7 +16,7 @@ class UserController {
   }
 
   public async signin({ body }: ISigninInput) {
-    console.debug('UserController - signin:', JSON.stringify(body));
+    console.debug("UserController - signin:", JSON.stringify(body));
 
     const user = await this.userRepository.get(body);
 
@@ -42,9 +42,8 @@ class UserController {
     };
   }
 
-
   public async signout({ headers }: ISignoutInput) {
-    console.debug('UserController - signout:', JSON.stringify(headers));
+    console.debug("UserController - signout:", JSON.stringify(headers));
 
     const token = headers.authorization.replace("Bearer ", "");
     this.verifyToken(token);
@@ -75,7 +74,7 @@ class UserController {
   }
 
   public async validateToken({ headers }: IValidateTokenInput) {
-    console.debug('UserController - validateToken:', JSON.stringify(headers));
+    console.debug("UserController - validateToken:", JSON.stringify(headers));
     const token = headers.authorization.replace("Bearer ", "");
     this.verifyToken(token);
 
@@ -99,7 +98,7 @@ class UserController {
   }
 
   public async signup({ body }: ISignupInput) {
-    console.debug('UserController - signup', JSON.stringify(body));
+    console.debug("UserController - signup", JSON.stringify(body));
 
     const existingUser = await this.userRepository.getByUserName(body.username);
 
@@ -132,11 +131,11 @@ class UserController {
   }
 
   private async decodeToken(token: string): Promise<IPayload> {
-    const decodedToken: IToken = await jwt.decode(token, { complete: true });
+    const decodedToken = await jwt.decode(token, { complete: true });
 
     console.log(decodedToken);
 
-    return decodedToken.payload;
+    return decodedToken["payload"];
   }
 
   private async verifyToken(token: string): Promise<boolean> {
