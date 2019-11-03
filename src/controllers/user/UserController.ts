@@ -135,6 +135,7 @@ class UserController {
 
     console.log(decodedToken);
 
+    // @ts-ignore
     return decodedToken["payload"];
   }
 
