@@ -1,7 +1,7 @@
 import { Document } from "mongoose";
-import IEntity from "../../entities/IEntity";
+import IEntity from "../../models/IEntity";
 
-export default interface IUserModel extends Document, IEntity {
+export default interface IUserDocument extends Document, IEntity {
   id: string;
   createdAt: Date;
   deletedAt: Date;

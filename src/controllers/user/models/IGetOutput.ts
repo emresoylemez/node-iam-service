@@ -1,4 +1,4 @@
-import IEntity from "../../../entities/IEntity";
+import IEntity from "../../../models/IEntity";
 import { Nullable } from "../../../libs/customTypes";
 
 export default interface IGetOutput extends IEntity {

@@ -1,12 +1,8 @@
-import fs = require("fs");
-import jwt = require("jsonwebtoken");
-import sha1 = require("sha1");
-
-import { ISigninInput, ISignupInput, ISignoutInput, IValidateTokenInput, IToken } from "./entities";
+import { decodeToken, generateToken, hash, verifyToken } from "../../libs/encryption";
+import { ISigninInput, ISignupInput, ISignoutInput, IValidateTokenInput } from "./models";
 import UserRepository from "../../repositories/user/UserRepository";
-import { BadRequestError, UnprocessableError } from "../../entities/errors";
-import { UnauthorizedResponse, SuccessResponse } from "../../entities/responses";
-import { IPayload } from "./entities/IToken";
+import { BadRequestError } from "../../models/errors";
+import { UnauthorizedResponse } from "../../models/responses";
 
 class UserController {
   private userRepository: UserRepository;
@@ -31,7 +27,7 @@ class UserController {
       ]);
     }
 
-    const token = await this.generateToken(user.username, user.tenantId);
+    const token = await generateToken(user.username, user.tenantId);
 
     user.accessToken = token;
 
@@ -46,9 +42,12 @@ class UserController {
     console.debug("UserController - signout:", JSON.stringify(headers));
 
     const token = headers.authorization.replace("Bearer ", "");
-    this.verifyToken(token);
 
-    const payload = await this.decodeToken(token);
+    if (!verifyToken(token)) {
+      throw new UnauthorizedResponse();
+    }
+
+    const payload = await decodeToken(token);
     const user = await this.userRepository.getByUserName(payload.uid);
 
     if (!user) {
@@ -76,9 +75,12 @@ class UserController {
   public async validateToken({ headers }: IValidateTokenInput) {
     console.debug("UserController - validateToken:", JSON.stringify(headers));
     const token = headers.authorization.replace("Bearer ", "");
-    this.verifyToken(token);
 
-    const payload = await this.decodeToken(token);
+    if (!verifyToken(token)) {
+      throw new UnauthorizedResponse();
+    }
+
+    const payload = await decodeToken(token);
     const user = await this.userRepository.getByUserName(payload.uid);
 
     if (!user || user.accessToken !== token || payload.ext < Date.now()) {
@@ -106,8 +108,8 @@ class UserController {
       return new UnauthorizedResponse("user already exists!");
     }
 
-    const token = await this.generateToken(body.username, body.tenantId);
-    const passwordHash = sha1(body.password);
+    const token = await generateToken(body.username, body.tenantId);
+    const passwordHash = hash(body.password);
     console.info(passwordHash);
 
     const newUser = await this.userRepository.create({
@@ -122,32 +124,6 @@ class UserController {
     return {
       token
     };
-  }
-
-  private async generateToken(uid: string, tenantId: string) {
-    const privateKey = fs.readFileSync("./private.pem", "utf8");
-    const oneHour = 1000 * 60 * 60;
-    return await jwt.sign({ uid, ext: Date.now() + oneHour, tenantId }, privateKey, { algorithm: "HS256" });
-  }
-
-  private async decodeToken(token: string): Promise<IPayload> {
-    const decodedToken = await jwt.decode(token, { complete: true });
-
-    console.log(decodedToken);
-
-    return decodedToken["payload"];
-  }
-
-  private async verifyToken(token: string): Promise<boolean> {
-    try {
-      const privateKey = fs.readFileSync("./private.pem", "utf8");
-      await jwt.verify(token, privateKey);
-    } catch (err) {
-      console.error("Invalid token!!!", err);
-      throw new UnauthorizedResponse();
-    }
-
-    return true;
   }
 }
 
