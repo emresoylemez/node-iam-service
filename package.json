@@ -18,7 +18,7 @@
     "nodemon": "nodemon ./dist/index.js",
     "nodemon-debug": "npm run nodemon -- --inspect",
     "remove-dist": "rm -rf ./dist",
-    "copy-resources": "cp -Rf ./config ./dist",
+    "copy-resources": "cp -Rf ./copyFolder ./dist",
     "pretest": "npm run build",
     "test": "cross-env NODE_ENV=test jest --forceExit --runInBand",
     "test:c": "npm run test -- --coverage",

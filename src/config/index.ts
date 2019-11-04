@@ -1,5 +1,5 @@
 import dotenv = require("dotenv");
-import ICoreConfig from "./ICoreConfig";
+import IConfig from "./IConfig";
 import { EnvVars } from "../libs/constants";
 
 if (process.env.NODE_ENV === EnvVars.TEST) {
@@ -8,13 +8,13 @@ if (process.env.NODE_ENV === EnvVars.TEST) {
   dotenv.config();
 }
 
-const config: ICoreConfig = {
+const config: IConfig = {
   apiPrefix: process.env.API_PREFIX,
-  configSecret: process.env.CONFIG_SECRET,
   corsOrigin: process.env.CORS_ORIGIN,
-  dbConnectionString: process.env.DB_CONNECTION_STRING.replace("__default__", process.env.CONFIG_SECRET),
+  dbConnectionString: process.env.DB_CONNECTION_STRING.replace("__default__", process.env.SERVICE_NAME),
   nodeEnv: process.env.NODE_ENV,
   port: process.env.PORT,
+  serviceName: process.env.SERVICE_NAME,
   swagger: {
     definition: {
       basePath: "/api",

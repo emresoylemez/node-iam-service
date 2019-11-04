@@ -11,6 +11,33 @@ class UserController {
     this.userRepository = new UserRepository();
   }
 
+  public async signup({ body }: ISignupInput) {
+    console.debug("UserController - signup", JSON.stringify(body));
+
+    const existingUser = await this.userRepository.getByUserName(body.username);
+
+    if (existingUser) {
+      return new UnauthorizedResponse("user already exists!");
+    }
+
+    const token = await generateToken(body.username, body.tenantId);
+    const passwordHash = hash(body.password);
+    console.info(passwordHash);
+
+    const newUser = await this.userRepository.create({
+      username: body.username,
+      password: passwordHash,
+      tenantId: body.tenantId,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      accessToken: token
+    });
+
+    return {
+      token
+    };
+  }
+
   public async signin({ body }: ISigninInput) {
     console.debug("UserController - signin:", JSON.stringify(body));
 
@@ -96,33 +123,6 @@ class UserController {
 
     return {
       active: true
-    };
-  }
-
-  public async signup({ body }: ISignupInput) {
-    console.debug("UserController - signup", JSON.stringify(body));
-
-    const existingUser = await this.userRepository.getByUserName(body.username);
-
-    if (existingUser) {
-      return new UnauthorizedResponse("user already exists!");
-    }
-
-    const token = await generateToken(body.username, body.tenantId);
-    const passwordHash = hash(body.password);
-    console.info(passwordHash);
-
-    const newUser = await this.userRepository.create({
-      username: body.username,
-      password: passwordHash,
-      tenantId: body.tenantId,
-      firstName: body.firstName,
-      lastName: body.lastName,
-      accessToken: token
-    });
-
-    return {
-      token
     };
   }
 }
